@@ -102,8 +102,7 @@ public sealed class UpdatesGitHubReleaseModel : IUpdateSource
         foreach (var asset in release["assets"]!.AsArray())
         {
             var name = asset?["name"]?.ToString() ?? string.Empty;
-            if (name.StartsWith("PCL-CE-", StringComparison.Ordinal) &&
-                name.EndsWith("-custom-x64.exe", StringComparison.Ordinal))
+            if (name == "PCL2_CE_Release_x64.exe")
             {
                 _assetName = name;
                 _assetUrl = asset!["browser_download_url"]!.ToString();

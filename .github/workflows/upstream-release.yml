@@ -87,9 +87,9 @@ jobs:
             --no-self-contained
           test -s "./artifact/Plain Craft Launcher 2.exe"
           mv "./artifact/Plain Craft Launcher 2.exe" \
-            "./artifact/PCL-CE-${UPSTREAM_TAG}-custom-x64.exe"
+            "./artifact/PCL2_CE_Release_x64.exe"
           cd artifact
-          sha256sum PCL-CE-*-custom-x64.exe > SHA256SUMS.txt
+          sha256sum PCL2_CE_Release_x64.exe > SHA256SUMS.txt
 
       - name: Upload x64 build artifact
         if: steps.release.outputs.already_released != 'true'
@@ -97,7 +97,7 @@ jobs:
         with:
           name: PCL-CE-${{ steps.release.outputs.upstream_tag }}-custom-x64
           path: |
-            artifact/PCL-CE-*-custom-x64.exe
+            artifact/PCL2_CE_Release_x64.exe
             artifact/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14
@@ -128,7 +128,7 @@ jobs:
           title="PCL-CE ${UPSTREAM_TAG} (Unofficial x64)"
           notes="中国式家长牛逼"
           gh release create "$RELEASE_TAG" \
-            artifact/PCL-CE-*-custom-x64.exe \
+            artifact/PCL2_CE_Release_x64.exe \
             artifact/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
