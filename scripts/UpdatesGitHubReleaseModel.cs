@@ -31,6 +31,10 @@ public sealed class UpdatesGitHubReleaseModel : IUpdateSource
         var releases = Requester.FetchJson(ReleasesApi, RequestParam.WithRetry).AsArray();
         foreach (var release in releases)
         {
+            if (string.Equals(release?["draft"]?.ToString(), "true", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(release?["prerelease"]?.ToString(), "true", StringComparison.OrdinalIgnoreCase))
+                continue;
+
             var tag = release?["tag_name"]?.ToString() ?? string.Empty;
             if (!tag.StartsWith(TagPrefix, StringComparison.Ordinal) ||
                 !tag.EndsWith(TagSuffix, StringComparison.Ordinal))

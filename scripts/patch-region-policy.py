@@ -48,10 +48,23 @@ PROFILE_PAGE_PATH = Path("Plain Craft Launcher 2/Pages/PageLaunch/PageLoginProfi
 PROFILE_HINT_OLD = "HintMicrosoft.Visibility = ProfileService.Profiles.Count == 0 ? Visibility.Visible : Visibility.Collapsed;"
 PROFILE_HINT_NEW = "HintMicrosoft.Visibility = Visibility.Collapsed;"
 UPDATE_MANAGER_PATH = Path("Plain Craft Launcher 2/Modules/Updates/UpdateManager.cs")
-UPDATE_SOURCE_OLD = '        new UpdatesMinioModel("https://github.com/PCL-Community/PCL2_CE_Server/raw/main/", "GitHub")'
-UPDATE_SOURCE_NEW = ""
-UPDATE_PRIMARY_OLD = "    public static UpdatesWrapperModel remoteServer = new(new List<IUpdateSource>\n    {\n"
-UPDATE_PRIMARY_NEW = UPDATE_PRIMARY_OLD + "        new UpdatesGitHubReleaseModel(),\n"
+UPDATE_MANAGER_OLD = "    public static UpdatesWrapperModel remoteServer = new(new List<IUpdateSource>\n    {\n        new UpdatesMirrorChyanModel(),\n        new UpdatesRandomModel(new[]\n        {\n            new UpdatesMinioModel(\"https://s3.pysio.online/pcl2-ce/\", \"Pysio\"),\n            new UpdatesMinioModel(\"https://staticassets.naids.com/resources/pclce/\", \"Naids\")\n        }),\n        new UpdatesMinioModel(\"https://github.com/PCL-Community/PCL2_CE_Server/raw/main/\", \"GitHub\")\n    });"
+UPDATE_MANAGER_NEW = "    public static UpdatesWrapperModel remoteServer = new(new List<IUpdateSource>\n    {\n        new UpdatesGitHubReleaseModel()\n    });\n\n    public static UpdatesWrapperModel announcementServer = new(new List<IUpdateSource>\n    {\n        new UpdatesMirrorChyanModel(),\n        new UpdatesRandomModel(new[]\n        {\n            new UpdatesMinioModel(\"https://s3.pysio.online/pcl2-ce/\", \"Pysio\"),\n            new UpdatesMinioModel(\"https://staticassets.naids.com/resources/pclce/\", \"Naids\")\n        }),\n        new UpdatesMinioModel(\"https://github.com/PCL-Community/PCL2_CE_Server/raw/main/\", \"GitHub\")\n    });"
+ANNOUNCEMENT_PATH = Path("Plain Craft Launcher 2/Modules/Updates/AnnouncementService.cs")
+ANNOUNCEMENT_OLD = "UpdateManager.remoteServer.GetAnnouncementList()"
+ANNOUNCEMENT_NEW = "UpdateManager.announcementServer.GetAnnouncementList()"
+CHANGELOG_PATH = Path("Plain Craft Launcher 2/Pages/PageSetup/PageSetupUpdate.xaml.cs")
+CHANGELOG_OLD = "ModBase.OpenWebsite(\"https://github.com/PCL-Community/PCL2-CE/releases/v\" + ModBase.versionBaseName);"
+CHANGELOG_NEW = "ModBase.OpenWebsite(\"https://github.com/Luoning77/PCL-CE-LUO/releases/tag/pcl-ce-v\" + ModBase.versionBaseName + \"-custom-x64\");"
+MIRROR_LINK_PATH = Path("Plain Craft Launcher 2/Pages/PageSetup/PageSetupUpdate.xaml.cs")
+MIRROR_LINK_OLD = "ModBase.OpenWebsite(\"https://mirrorchyan.com/\");"
+MIRROR_LINK_NEW = "ModBase.OpenWebsite(\"https://github.com/Luoning77/PCL-CE-LUO/releases\");"
+CHANNEL_PATH = Path("Plain Craft Launcher 2/Pages/PageSetup/PageSetupUpdate.xaml.cs")
+CHANNEL_OLD = "ComboSystemUpdateChannel.SelectedIndex = (int)Config.Update.UpdateChannel;"
+CHANNEL_NEW = "ComboSystemUpdateChannel.SelectedIndex = 0;\n        ComboSystemUpdateChannel.IsEnabled = false;\n        Config.Update.UpdateChannel = (Core.App.UpdateChannel)0;"
+MIRROR_UI_PATH = Path("Plain Craft Launcher 2/Pages/PageSetup/PageSetupUpdate.xaml")
+MIRROR_UI_OLD = "                        <TextBlock Text=\"{DynamicResource Setup.Update.MirrorChyanCdk.Label}\" Grid.Row=\"4\" VerticalAlignment=\"Center\"\n                                   HorizontalAlignment=\"Left\" Margin=\"0,0,25,0\" />\n                        <PasswordBox x:Name=\"TextMirrorCDK\"\n                                      ToolTip=\"{DynamicResource Setup.Update.MirrorChyanCdk.ToolTip}\"\n                                     Grid.Row=\"4\" Grid.Column=\"1\"\n                                     PasswordChanged=\"TextMirrorCDK_PasswordChanged\" />\n                        <local:MyButton x:Name=\"BtnGetMirrorCDK\" Text=\"{DynamicResource Setup.Update.MirrorChyanCdk.Get}\" Grid.Column=\"3\" Grid.Row=\"4\"\n                                        ColorType=\"Highlight\" Click=\"BtnGetMirrorCDK_Click\" />"
+MIRROR_UI_NEW = "                        <TextBlock Visibility=\"Collapsed\" Text=\"{DynamicResource Setup.Update.MirrorChyanCdk.Label}\" Grid.Row=\"4\" VerticalAlignment=\"Center\"\n                                   HorizontalAlignment=\"Left\" Margin=\"0,0,25,0\" />\n                        <PasswordBox Visibility=\"Collapsed\" x:Name=\"TextMirrorCDK\"\n                                      ToolTip=\"{DynamicResource Setup.Update.MirrorChyanCdk.ToolTip}\"\n                                     Grid.Row=\"4\" Grid.Column=\"1\"\n                                     PasswordChanged=\"TextMirrorCDK_PasswordChanged\" />\n                        <local:MyButton Visibility=\"Collapsed\" x:Name=\"BtnGetMirrorCDK\" Text=\"{DynamicResource Setup.Update.MirrorChyanCdk.Get}\" Grid.Column=\"3\" Grid.Row=\"4\"\n                                        ColorType=\"Highlight\" Click=\"BtnGetMirrorCDK_Click\" />"
 UPDATE_SOURCE_FILE = Path("Plain Craft Launcher 2/Modules/Updates/UpdatesGitHubReleaseModel.cs")
 
 
@@ -89,8 +102,12 @@ def main() -> int:
         (PROFILE_UI_PATH, PROFILE_UI_OLD, PROFILE_UI_NEW, "offline profile selection"),
         (PROFILE_UI_PATH, PROFILE_SELECTION_OLD, PROFILE_SELECTION_NEW, "offline profile option"),
         (PROFILE_PAGE_PATH, PROFILE_HINT_OLD, PROFILE_HINT_NEW, "obsolete Microsoft hint"),
-        (UPDATE_MANAGER_PATH, UPDATE_SOURCE_OLD, UPDATE_SOURCE_NEW, "GitHub update source"),
-        (UPDATE_MANAGER_PATH, UPDATE_PRIMARY_OLD, UPDATE_PRIMARY_NEW, "primary fork update source"),
+        (UPDATE_MANAGER_PATH, UPDATE_MANAGER_OLD, UPDATE_MANAGER_NEW, "exclusive custom version source"),
+        (ANNOUNCEMENT_PATH, ANNOUNCEMENT_OLD, ANNOUNCEMENT_NEW, "separate announcement source"),
+        (CHANGELOG_PATH, CHANGELOG_OLD, CHANGELOG_NEW, "custom release link"),
+        (MIRROR_LINK_PATH, MIRROR_LINK_OLD, MIRROR_LINK_NEW, "obsolete mirror link"),
+        (CHANNEL_PATH, CHANNEL_OLD, CHANNEL_NEW, "stable-only update channel"),
+        (MIRROR_UI_PATH, MIRROR_UI_OLD, MIRROR_UI_NEW, "hide obsolete mirror settings"),
     ):
         target = source_root / relative_path
         if not target.is_file():
@@ -106,7 +123,7 @@ def main() -> int:
             )
             return 1
         updated = content.replace(old, new, 1)
-        if (new and updated.count(new) != 1) or (old in updated and label != "primary fork update source"):
+        if (new and updated.count(new) != 1) or (old in updated and old not in new):
             print(f"{label} patch verification failed; refusing to publish", file=sys.stderr)
             return 1
         with target.open("w", encoding="utf-8", newline="") as output:

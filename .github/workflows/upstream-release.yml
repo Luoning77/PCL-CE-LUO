@@ -2,7 +2,7 @@ name: Build x64 from latest PCL-CE stable release
 
 on:
   schedule:
-    - cron: "23 */6 * * *"
+    - cron: "0 4 * * *" # 12:00 UTC+8
   workflow_dispatch:
 
 concurrency:
@@ -20,6 +20,7 @@ jobs:
       upstream_sha: ${{ steps.release.outputs.upstream_sha }}
       release_tag: ${{ steps.release.outputs.release_tag }}
       already_released: ${{ steps.release.outputs.already_released }}
+      patch_revision: ${{ steps.release.outputs.patch_revision }}
     steps:
       - name: Check out automation files
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -43,12 +44,15 @@ jobs:
           echo "upstream_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
           echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
 
-          if gh release view "$release_tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+          patch_revision="$(git rev-parse HEAD:scripts)"
+          echo "patch_revision=$patch_revision" >> "$GITHUB_OUTPUT"
+          release_body="$(gh release view "$release_tag" --repo "$GITHUB_REPOSITORY" --json body --jq .body 2>/dev/null || true)"
+          if [[ "$release_body" == *"<!-- patch-revision:$patch_revision -->"* ]]; then
             echo "already_released=true" >> "$GITHUB_OUTPUT"
-            echo "Release $release_tag already exists; nothing to do."
+            echo "Release $release_tag already contains patch revision $patch_revision; nothing to do."
           else
             echo "already_released=false" >> "$GITHUB_OUTPUT"
-            echo "Found upstream $upstream_tag ($upstream_sha)."
+            echo "Found upstream $upstream_tag ($upstream_sha), patch revision $patch_revision."
           fi
 
       - name: Check out the exact upstream release source
@@ -122,15 +126,24 @@ jobs:
           UPSTREAM_TAG: ${{ needs.build.outputs.upstream_tag }}
           UPSTREAM_SHA: ${{ needs.build.outputs.upstream_sha }}
           RELEASE_TAG: ${{ needs.build.outputs.release_tag }}
+          PATCH_REVISION: ${{ needs.build.outputs.patch_revision }}
         shell: bash
         run: |
           set -euo pipefail
           title="PCL-CE ${UPSTREAM_TAG} (Unofficial x64)"
-          notes="中国式家长牛逼"
-          gh release create "$RELEASE_TAG" \
-            artifact/PCL2_CE_Release_x64.exe \
-            artifact/SHA256SUMS.txt \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
-            --title "$title" \
-            --notes "$notes"
+          notes="$(printf '中国式家长牛逼\n\n<!-- patch-revision:%s -->\n' "$PATCH_REVISION")"
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" \
+              artifact/PCL2_CE_Release_x64.exe \
+              artifact/SHA256SUMS.txt \
+              --repo "$GITHUB_REPOSITORY" --clobber
+            gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --notes "$notes"
+          else
+            gh release create "$RELEASE_TAG" \
+              artifact/PCL2_CE_Release_x64.exe \
+              artifact/SHA256SUMS.txt \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "$title" \
+              --notes "$notes"
+          fi
